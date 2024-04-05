@@ -44,6 +44,9 @@ class ConfigParser
         // Topic that Point Cloud is published to 
         std::string pointCloudTopic;
 
+        // The frame that the map is located in
+        std::string mapFrame;
+
         // Path to the scan files.
         std::string scanPath;
 

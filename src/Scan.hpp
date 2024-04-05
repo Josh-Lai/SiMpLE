@@ -25,6 +25,9 @@ public:
   // Container to store the point cloud.
   std::vector<Eigen::Vector4d> ptCloud;
 
+  // Pcl Container for point cloud (for ROS interaction)
+  pcl::PointCloud<pcl::PointXYZ> pclPtCloud;
+
   // Container for a nanoflann-friendly point cloud.
   PointCloud<double> pcForKdTree_;
 
