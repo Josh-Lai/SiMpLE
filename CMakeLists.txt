@@ -18,6 +18,8 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(pcl_ros REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 
 find_package(nanoflann REQUIRED)
 find_package(TBB REQUIRED)
@@ -25,7 +27,7 @@ find_package(dlib REQUIRED)
 find_package(Threads REQUIRED)
 
 add_executable(simple src/main.cpp src/ObjectiveFunction.cpp src/Scan.cpp src/Map.cpp src/Register.cpp src/utils.cpp)
-ament_target_dependencies(simple rclcpp sensor_msgs pcl_ros)
+ament_target_dependencies(simple rclcpp sensor_msgs pcl_ros geometry_msgs tf2)
 
 target_link_libraries(simple nanoflann::nanoflann)
 target_link_libraries(simple dlib::dlib)

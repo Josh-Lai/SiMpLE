@@ -1,7 +1,6 @@
 #include <chrono>
 #include <filesystem>
 #include <oneapi/tbb/parallel_for.h>
-#include <sensor_msgs/msg/detail/point_cloud2__struct.hpp>
 
 #include "ConfigParser.hpp"
 #include "Map.hpp"
@@ -11,6 +10,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
+#include "tf2_ros/transform_broadcaster.h"
 
 using std::placeholders::_1;
 
@@ -32,12 +32,11 @@ public:
         this->declare_parameter("useLivePointCloud", true);
     config_.pointCloudTopic = this->declare_parameter("pointCloudTopic", "");
     config_.mapFrame = this->declare_parameter("mapFrame", "");
-
+    
     pcl_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         config_.pointCloudTopic, rclcpp::QoS(10).keep_all(),
         std::bind(&Simple::run_simple, this, _1));
-    map_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
-        "map_points", rclcpp::QoS(10));
+    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     subMap_ = Map(config_);
     scanToMapRegister_ = Register(config_);
   }
@@ -45,10 +44,11 @@ public:
 private:
   ConfigParser config_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pcl_sub_;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr map_pub_;
   Map subMap_;
   Register scanToMapRegister_;
   int scanCount_ = 0;
+
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
   void run_simple(sensor_msgs::msg::PointCloud2 msg) {
     // Convert the pointcloud into data structure seen in the original
@@ -69,13 +69,22 @@ private:
     subMap_.updateMap(newScan.ptCloud, hypothesis);
     scanCount_++;
 
-    // Output the result
-    pcl::PointCloud<pcl::PointXYZ> pclMap = simple_to_pcl(subMap_.ptCloud);
-    sensor_msgs::msg::PointCloud2 outMap;
-    pcl::toROSMsg(pclMap, outMap);
-    outMap.header.stamp = this->get_clock()->now();
-    outMap.header.frame_id = config_.mapFrame;
-    map_pub_->publish(outMap);
+    // Publish the Hypothesis as a TF frame
+    Eigen::Matrix3d R = hypothesis.block(0,0,3,3);
+    Eigen::Quaterniond Q(R);
+    geometry_msgs::msg::TransformStamped T;
+    T.header.frame_id = config_.mapFrame;
+    T.header.stamp = msg.header.stamp;
+    T.child_frame_id = msg.header.frame_id;
+    T.transform.translation.x = hypothesis(0,3);
+    T.transform.translation.y = hypothesis(1,3);
+    T.transform.translation.z = hypothesis(2,3);
+
+    T.transform.rotation.x = Q.x();
+    T.transform.rotation.y = Q.y();
+    T.transform.rotation.z = Q.z();
+    T.transform.rotation.w = Q.w();
+    tf_broadcaster_->sendTransform(T);
   }
 
   pcl::PointCloud<pcl::PointXYZ>
