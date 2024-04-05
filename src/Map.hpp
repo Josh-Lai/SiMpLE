@@ -13,6 +13,7 @@
 class Map : public Scan
 {
     public:
+        Map();
         /**
          * @brief Construct a new Map object.
          * 

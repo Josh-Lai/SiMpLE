@@ -1,5 +1,7 @@
 #include "Map.hpp"
 
+Map::Map(){};
+
 Map::Map(ConfigParser &config)
     : Scan(config)
 {

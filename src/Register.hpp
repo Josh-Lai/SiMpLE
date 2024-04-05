@@ -13,6 +13,8 @@
 class Register
 {
     public:
+        Register();
+        
         /**
          * @brief Construct a new Register object.
          * 

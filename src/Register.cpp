@@ -1,5 +1,7 @@
 #include "Register.hpp"
 
+Register::Register(){};
+
 Register::Register(ConfigParser &config)
 {
     convTol_ = config.convergenceTol;

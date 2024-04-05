@@ -34,15 +34,20 @@ public:
     pcl_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         config_.pointCloudTopic, rclcpp::QoS(10).keep_all(),
         std::bind(&Simple::run_simple, this, _1));
+    subMap_ = Map(config_);
+    scanToMapRegister_ = Register(config_);
   }
 
 private:
   ConfigParser config_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pcl_sub_;
+  Map subMap_;
+  Register scanToMapRegister_;
 
   void run_simple(sensor_msgs::msg::PointCloud2 msg) {
     // Convert the pointcloud into data structure seen in the original
     // implementation
+    Scan newScan(config_);
   }
 };
 
