@@ -16,13 +16,14 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(nanoflann REQUIRED)
 find_package(TBB REQUIRED)
 find_package(dlib REQUIRED)
 find_package(Threads REQUIRED)
 
 add_executable(simple src/main.cpp src/ObjectiveFunction.cpp src/Scan.cpp src/Map.cpp src/Register.cpp src/utils.cpp)
-ament_target_dependencies(simple rclcpp)
+ament_target_dependencies(simple rclcpp sensor_msgs)
 
 target_link_libraries(simple nanoflann::nanoflann)
 target_link_libraries(simple dlib::dlib)

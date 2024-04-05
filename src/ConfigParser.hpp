@@ -6,33 +6,11 @@
 
 /**
  * @brief A class to handle the algorithm configuration parsing.
+ * Reconfigured to store the results from the ROS2 parameters
  * 
  */
 class ConfigParser
 {
-    public:
-        /**
-         * @brief Construct a new Config Parser object.
-         * 
-         * @param argc          Number of commandline arguments.
-         * @param yamlFilePath  Commandline arguments.
-         */
-        ConfigParser(int argc, char** yamlFilePath);
-
-        /**
-         * @brief Destroy the Config Parser object.
-         * 
-         */
-        ~ConfigParser();
-
-        /**
-         * @brief Parse the algrithm configuration path.
-         * 
-         * @return int Returns 0 if algorithm parsing was successful and 1
-         *             otherwise.
-         */
-        int parseConfig();
-
     public:
         // Print the algorithm configuration parameters.
         bool verbose;
@@ -58,6 +36,13 @@ class ConfigParser
         
         // The sensor's minimum range.
         double minSensorRange;
+
+        // Use live point clouds
+        bool useLivePointCloud;
+        
+        // Must declare these parameters if a live point cloud is used
+        // Topic that Point Cloud is published to 
+        std::string pointCloudTopic;
 
         // Path to the scan files.
         std::string scanPath;
