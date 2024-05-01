@@ -50,8 +50,9 @@ class ConfigParser
         // Path to the scan files.
         std::string scanPath;
 
-        // Name of the output file.
-        std::string outputFileName;
+        // The custom frame to output the estimated frame translation
+        // If this parameter is empty, the Point Cloud frame will be used
+        std::string outputFrame;
 
     private:
         // Path to the algorithm configuration file.

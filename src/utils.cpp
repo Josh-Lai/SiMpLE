@@ -110,9 +110,6 @@ void writeResults(ConfigParser &config,
                      << ";" << " % [m]" << std::endl
                      << "minSensorRange         = " 
                      << config.minSensorRange                   
-                     << ";" << " % [m]" << std::endl
-                     << "outputFileName         = " 
-                     << "\"" << config.outputFileName << "\""   
                      << ";" << std::endl
                      << "outputConfigFileName   = " 
                      << "\"" << outputConfigFileName << "\""    

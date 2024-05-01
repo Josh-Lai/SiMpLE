@@ -27,11 +27,11 @@ public:
     config_.maxSensorRange = this->declare_parameter("maxSensorRange", 120.0);
     config_.minSensorRange = this->declare_parameter("minSensorRange", 10.0);
     config_.scanPath = this->declare_parameter("scanPath", "");
-    config_.outputFileName = this->declare_parameter("outputFileName", "");
     config_.useLivePointCloud =
         this->declare_parameter("useLivePointCloud", true);
     config_.pointCloudTopic = this->declare_parameter("pointCloudTopic", "");
     config_.mapFrame = this->declare_parameter("mapFrame", "");
+    config_.outputFrame = this->declare_parameter("outputFrame","");
     
     pcl_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         config_.pointCloudTopic, rclcpp::QoS(10).keep_all(),
@@ -75,7 +75,11 @@ private:
     geometry_msgs::msg::TransformStamped T;
     T.header.frame_id = config_.mapFrame;
     T.header.stamp = msg.header.stamp;
-    T.child_frame_id = msg.header.frame_id;
+    if (config_.outputFrame.size() == 0) {
+      T.child_frame_id = msg.header.frame_id;
+    } else {
+      T.child_frame_id = config_.outputFrame;
+    }
     T.transform.translation.x = hypothesis(0,3);
     T.transform.translation.y = hypothesis(1,3);
     T.transform.translation.z = hypothesis(2,3);
