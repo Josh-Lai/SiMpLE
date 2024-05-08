@@ -1,0 +1,21 @@
+simple:
+  ros__parameters:
+    ## Algorithm Configuration (VLP-16)
+    sigma: 12.0
+    rMap: 0.75
+    rNew: 0.35
+    convergenceTol: 1e-4
+    kitti: false
+
+    ## Hardware Configuration
+    # Simple will cut off all points not inside this range
+    minSensorRange: 5.0
+    maxSensorRange: 120.0
+
+    # Configure  the outputs of the SiMPLE Node
+    pointCloudTopic: "velodyne_points"
+    mapFrame: "odom" # The parent frame of the published pose updates
+    outputFrame: "" # The child frame of the published pose updates. 
+                    # (Defaults to point cloud frame when blank)
+    
+    saveMap: false
