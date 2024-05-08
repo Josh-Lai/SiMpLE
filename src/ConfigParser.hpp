@@ -47,12 +47,15 @@ class ConfigParser
         // The frame that the map is located in
         std::string mapFrame;
 
-        // Path to the scan files.
-        std::string scanPath;
-
         // The custom frame to output the estimated frame translation
         // If this parameter is empty, the Point Cloud frame will be used
         std::string outputFrame;
+
+        // If enabled, will store the parsed point clouds in RAM and save the map to a file
+        bool saveToFile;
+
+        // File path to save the file to
+        std::string mapFile;
 
     private:
         // Path to the algorithm configuration file.

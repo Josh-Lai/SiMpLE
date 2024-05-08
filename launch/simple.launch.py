@@ -5,7 +5,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    config = os.path.join(get_package_share_directory("simple"), "config", "live.yaml")
+    config = os.path.join(get_package_share_directory("simple"), "config", "save_map.yaml")
 
     start_simple = Node(
         package="simple", executable="simple", name="simple", parameters=[config]

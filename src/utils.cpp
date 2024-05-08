@@ -91,7 +91,6 @@ void writeResults(ConfigParser &config,
     outputConfigFile << "% computation finised at : " << std::ctime(&end_time)
                      << std::endl
                      << "scansFolderPath        = "
-                     << "\"" <<  config.scanPath  << "\""       
                      << ";" << std::endl
                      << "sigma                  = " 
                      << config.sigma                            

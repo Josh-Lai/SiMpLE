@@ -10,6 +10,9 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
+#include "pcl_ros/transforms.hpp"
+#include "pcl/io/pcd_io.h"
+#include "pcl/conversions.h"
 #include "tf2_ros/transform_broadcaster.h"
 
 using std::placeholders::_1;
@@ -26,12 +29,11 @@ public:
     config_.convergenceTol = this->declare_parameter("convergenceTol", 1e-3);
     config_.maxSensorRange = this->declare_parameter("maxSensorRange", 120.0);
     config_.minSensorRange = this->declare_parameter("minSensorRange", 10.0);
-    config_.scanPath = this->declare_parameter("scanPath", "");
-    config_.useLivePointCloud =
-        this->declare_parameter("useLivePointCloud", true);
     config_.pointCloudTopic = this->declare_parameter("pointCloudTopic", "");
     config_.mapFrame = this->declare_parameter("mapFrame", "");
     config_.outputFrame = this->declare_parameter("outputFrame","");
+    config_.saveToFile =  this->declare_parameter("saveToFile", false);
+    config_.mapFile = this->declare_parameter("mapFile", "map.pcd");
     
     pcl_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         config_.pointCloudTopic, rclcpp::QoS(10).keep_all(),
@@ -41,12 +43,19 @@ public:
     scanToMapRegister_ = Register(config_);
   }
 
+  ~Simple() {
+    if(config_.saveToFile) {
+      save_map();
+    }
+  }
+
 private:
   ConfigParser config_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pcl_sub_;
   Map subMap_;
   Register scanToMapRegister_;
   int scanCount_ = 0;
+  sensor_msgs::msg::PointCloud2 fullMap_;
 
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
@@ -89,6 +98,12 @@ private:
     T.transform.rotation.z = Q.z();
     T.transform.rotation.w = Q.w();
     tf_broadcaster_->sendTransform(T);
+    if (config_.saveToFile) {
+      pcl::PointCloud<pcl::PointXYZ> ptCloud = simple_to_pcl(newScan.ptCloud);
+      sensor_msgs::msg::PointCloud2 rosPcl;
+      pcl::toROSMsg(ptCloud, rosPcl);
+      append_point_cloud(rosPcl, hypothesis);
+    }
   }
 
   pcl::PointCloud<pcl::PointXYZ>
@@ -99,13 +114,37 @@ private:
     // Loop over SiMPLE point cloud to populate
     tbb::parallel_for(tbb::blocked_range<int>(0, ptCloud.size()),
                       [&](tbb::blocked_range<int> r) {
-                        for (unsigned int i = r.begin(); i < r.end(); i++) {
+                        for (unsigned int i = r.begin(); i < (unsigned int)r.end(); i++) {
                           pclCloud.points[i].x = ptCloud[i][0];
                           pclCloud.points[i].y = ptCloud[i][1];
                           pclCloud.points[i].z = ptCloud[i][2];
                         }
                       });
     return pclCloud;
+  }
+
+  /**
+  * Append the point cloud to the buffer (which will be saved on program exit)
+  * Adds overhead, so should only be run if saveToFile is true
+  */
+  void append_point_cloud(sensor_msgs::msg::PointCloud2 newPcl, Eigen::Matrix4d T) {
+    // Transform the point cloud to its new frame
+    sensor_msgs::msg::PointCloud2 tPcl;
+    pcl_ros::transformPointCloud(T.cast<float>(), newPcl, tPcl);
+    pcl::concatenatePointCloud(fullMap_, tPcl, fullMap_);
+
+  }
+
+  /**
+  * Saves the point cloud stored to a map file
+  * specified in configuration
+  */
+  void save_map(void) {
+    if(config_.saveToFile) {
+      RCLCPP_INFO(this->get_logger(), "Saving Map");
+      pcl::io::savePCDFile(config_.mapFile, fullMap_);
+      RCLCPP_INFO(this->get_logger(), "Map saved to %s!", config_.mapFile.c_str());
+    }
   }
 };
 

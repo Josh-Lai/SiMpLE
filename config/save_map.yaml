@@ -18,4 +18,5 @@ simple:
     outputFrame: "" # The child frame of the published pose updates. 
                     # (Defaults to point cloud frame when blank)
     
-    saveToFile: false
+    saveToFile: true
+    mapFile: "simple.pcd"
