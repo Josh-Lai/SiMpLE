@@ -10,6 +10,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
+#include "std_msgs/msg/bool.hpp"
 #include "pcl_ros/transforms.hpp"
 #include "pcl/io/pcd_io.h"
 #include "pcl/conversions.h"
@@ -41,18 +42,20 @@ public:
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     subMap_ = Map(config_);
     scanToMapRegister_ = Register(config_);
-  }
 
-  ~Simple() {
     if(config_.saveToFile) {
-      save_map();
+      save_sub_ = this->create_subscription<std_msgs::msg::Bool> (
+        "save_simple_map", rclcpp::QoS(10), std::bind(&Simple::save_map, this, _1)
+      );
     }
   }
+
 
 private:
   using PclPointType = pcl::PointXYZI;
   ConfigParser config_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pcl_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr save_sub_;
   Map subMap_;
   Register scanToMapRegister_;
   int scanCount_ = 0;
@@ -139,8 +142,8 @@ private:
   * Saves the point cloud stored to a map file
   * specified in configuration
   */
-  void save_map(void) {
-    if(config_.saveToFile) {
+  void save_map(std_msgs::msg::Bool msg) {
+    if(msg.data) {
       RCLCPP_INFO(this->get_logger(), "Saving Map");
       pcl::io::savePCDFile(config_.mapFile, fullMap_);
       RCLCPP_INFO(this->get_logger(), "Map saved to %s!", config_.mapFile.c_str());
