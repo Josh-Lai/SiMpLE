@@ -70,7 +70,7 @@ private:
     // implementation
     Scan newScan(config_);
     newScan.readScan(msg);
-    RCLCPP_INFO(this->get_logger(), "Read Scan with %d points",
+    RCLCPP_DEBUG(this->get_logger(), "Read Scan with %d points",
                 (int)newScan.ptCloud.size());
     // Process as per the SiMPLE algorithm
     Eigen::Matrix4d hypothesis = Eigen::Matrix4d::Identity();
