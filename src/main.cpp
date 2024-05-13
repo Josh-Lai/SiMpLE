@@ -12,6 +12,7 @@
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "std_msgs/msg/bool.hpp"
 #include "pcl_ros/transforms.hpp"
+#include "pcl/filters/uniform_sampling.h"
 #include "pcl/io/pcd_io.h"
 #include "pcl/conversions.h"
 #include "tf2_ros/transform_broadcaster.h"
@@ -34,6 +35,7 @@ public:
     config_.mapFrame = this->declare_parameter("mapFrame", "");
     config_.outputFrame = this->declare_parameter("outputFrame","");
     config_.saveToFile =  this->declare_parameter("saveToFile", false);
+    config_.fileDownsample = this->declare_parameter("fileDownsample", 0.0);
     config_.mapFile = this->declare_parameter("mapFile", "map.pcd");
     
     pcl_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
@@ -145,7 +147,18 @@ private:
   void save_map(std_msgs::msg::Bool msg) {
     if(msg.data) {
       RCLCPP_INFO(this->get_logger(), "Saving Map");
-      pcl::io::savePCDFile(config_.mapFile, fullMap_);
+      if(config_.fileDownsample > 0) {
+        // Downsample the map
+        std::shared_ptr<pcl::PointCloud<pcl::PointXYZI>> mapDownsampled;
+        pcl::fromROSMsg(fullMap_, *mapDownsampled);
+        pcl::UniformSampling<pcl::PointXYZI> filter;
+        filter.setInputCloud(mapDownsampled);
+        filter.setRadiusSearch(config_.fileDownsample);
+        filter.filter(*mapDownsampled);
+        pcl::io::savePCDFile(config_.mapFile, *mapDownsampled);
+      } else {
+        pcl::io::savePCDFile(config_.mapFile, fullMap_);
+      }
       RCLCPP_INFO(this->get_logger(), "Map saved to %s!", config_.mapFile.c_str());
     }
   }

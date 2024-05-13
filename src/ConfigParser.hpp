@@ -57,6 +57,9 @@ class ConfigParser
         // File path to save the file to
         std::string mapFile;
 
+        // Downsampling the saved file. If this parameter is zero, downsampling will not employed
+        double fileDownsample;
+
     private:
         // Path to the algorithm configuration file.
         std::string yamlFilePath_;
