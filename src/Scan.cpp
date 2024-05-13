@@ -14,19 +14,21 @@ Scan::~Scan() {}
 void Scan::readScan(sensor_msgs::msg::PointCloud2 rospcl) {
   // Convert  the  point cloud into the data structure used in the rest of the
   // impl
-  pcl::PointCloud<pcl::PointXYZ> pcl;
+  pcl::PointCloud<pcl::PointXYZI> pcl;
   pcl::fromROSMsg(rospcl, pcl);
   ptCloud.clear();
+  pclPtCloud_.clear();
   allPoints_.clear();
   // Loop over the point cloud
   unsigned int numPts = pcl.size();
   int counter = 0;
   for (unsigned int i = 0; i < numPts; i++) {
-    pcl::PointXYZ pt = pcl[i];
+    pcl::PointXYZI pt = pcl[i];
     double normSquared = pow(pt.x, 2) + pow(pt.y, 2) + pow(pt.z, 2);
     if ((normSquared > pow(minSensorRange_, 2) &&
          (normSquared < pow(maxSensorRange_, 2)))) {
       ptCloud.push_back({pt.x, pt.y, pt.z, 1});
+      pclPtCloud_.push_back(pt);
       allPoints_.insert(counter);
       counter++;
     }

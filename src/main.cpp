@@ -50,6 +50,7 @@ public:
   }
 
 private:
+  using PclPointType = pcl::PointXYZI;
   ConfigParser config_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pcl_sub_;
   Map subMap_;
@@ -99,17 +100,16 @@ private:
     T.transform.rotation.w = Q.w();
     tf_broadcaster_->sendTransform(T);
     if (config_.saveToFile) {
-      pcl::PointCloud<pcl::PointXYZ> ptCloud = simple_to_pcl(newScan.ptCloud);
       sensor_msgs::msg::PointCloud2 rosPcl;
-      pcl::toROSMsg(ptCloud, rosPcl);
+      pcl::toROSMsg(newScan.pclPtCloud_, rosPcl);
       append_point_cloud(rosPcl, hypothesis);
     }
   }
 
-  pcl::PointCloud<pcl::PointXYZ>
+  pcl::PointCloud<pcl::PointXYZI>
   simple_to_pcl(std::vector<Eigen::Vector4d> ptCloud) {
     // create pcl point cloud from simple
-    pcl::PointCloud<pcl::PointXYZ> pclCloud;
+    pcl::PointCloud<pcl::PointXYZI> pclCloud;
     pclCloud.resize(ptCloud.size());
     // Loop over SiMPLE point cloud to populate
     tbb::parallel_for(tbb::blocked_range<int>(0, ptCloud.size()),
